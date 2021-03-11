@@ -77,12 +77,12 @@ There’s an unintuitive consequence of holding onto everyone’s ETH until the 
 This seems strange on the surface — after all, when you’re bidding on a pair of ice skates on eBay, you express your bid using the full amount. If you bid $70, and someone else bids $80, you don’t bid “$20” to outbid them. You would probably type “$90” in the input field.
 This is where it’s important to recognize the separation of concerns between the contract and the UI. Ideally, the UI is responsible for smoothing over this oddity; the contract’s job is simply to ensure that the business logic is executed securely and correctly, even if that business logic seems a little bit strange to human intuition.
 
-So what does our placeBid() function look like? I don’t want to waste words here dissecting every line of the business logic, since the goal of this article is to address broader architectural patterns and concerns. For those interested in fine-grained detail, I’ve tried to annotate the code with comments where appropriate.
+So what does our placeBid() function look like? We don’t want to waste words here dissecting every line of the business logic, since the goal of this project is to address broader architectural patterns and concerns. For those interested in fine-grained detail, we have tried to annotate the code with comments where appropriate.
 
 ![comments1](Images/comments1.png)
 ![comments2](Images/comments2.png)
 
-We’re handling several cases here:
+We are handling several scenarios here:
 A user has sent an amount that isn’t sufficient, in which case we throw.
 A user has sent an amount that’s higher than highestBindingBid but not higher than highestBid , in which case we simply increase highestBindingBid.
 A user has sent an amount that’s higher than highestBid, in which case they become the new highestBidder.
@@ -92,7 +92,7 @@ The current highestBidder wishes to raise their maximum bid, in which case we ac
 
 When the auction is over, whether it’s canceled or not, users should be able to withdraw the ETH that they used to place their bids.
 Withdrawals should only be permitted after the auction has successfully ended (block.number > endBlock) or if it was canceled. Unfortunately, we’ll need a new function modifier for this, since the conditions are logically OR’ed together (chaining together small modifiers only works for AND’ed conditions).
-Technically, since this precondition is only used once (here), we could simply hard-code it into the function, but for consistent style, I chose to encapsulate it into its own modifier:
+Technically, since this precondition is only used once (here), we could simply hard-code it into the function, but for consistent style, we chose to encapsulate it into its own modifier:
 
 There are several cases we need to handle, depending on which user is asking our contract for a withdrawal:
 The owner should be able to withdraw an amount of ETH equal to highestBindingBid.
