@@ -7,9 +7,13 @@
 #### Our auction contract will have a simple interface that allows users to place bids and, after the auction is complete, withdraw their funds. The owner of the auction needs to be able to cancel the auction in exceptional cases, and must also be allowed to withdraw the winning bid.
 #### We have settled on the following interface, which should provide just enough expressiveness to handle this functionality. Notice that this is also a good time to think about the events that we might want these functions to emit.
 
+![Events](Images/Events.png)
+
 ## Plan your storage variables
 
 #### Let’s also spend a bit of time thinking about what kinds of storage variables we want to keep on hand. Here’s what we came up with. Notice that we have informally separated these into “static” data, which doesn’t change over the life of the contract, and “state” data, which does.
+
+![Variables](Images/Variables.png)
 
 #### Some of these are self-explanatory, like canceled and fundsByBidder. We’ll see how these are used when we start writing our contract’s functions. What about the rest?
 #### Every auction needs an owner — the person to whom the winning bid will go if the auction completes successfully. If you were so inclined, you might want to separate out the “controller” (say, the person or contract that has permission to cancel the auction) from the “beneficiary” (the person or contract to whom the funds will go after the auction is over), but we will leave that as an exercise to the reader. For now, they’re one and the same.
@@ -20,6 +24,8 @@
 ## The constructor
 
 #### Our constructor is extremely simple:
+
+![Constructor](Images/Constructor.png)
 
 #### It checks some preconditions and then sets a few variables in the contract’s storage (namely, the ones we marked “static”).
 #### We refuse to create auctions with invalid start and end times: the start time must be before the end time, and it must also be after the current block (in other words, you can’t create a new auction that started at some point in the past).
@@ -33,8 +39,12 @@
 
 #### This sounds like a list of preconditions — a perfect application of Solidity’s function modifiers. Let’s imagine we want to place the following constraints on our placeBid() function:
 
+![placeBid()](Images/Placebid.png)
+
 #### Take note of the fact that we err on the side of “many small modifiers”: each precondition is as minimal as possible. This makes our modifiers more reusable.
 #### The optimal approach is to make each modifier as dead-simple as possible, with the aim of reusing them frequently:
+
+![Modifiers](Images/modifiers.png)
 
 #### Simple modifiers are best.
 #### With our preconditions in place, let’s take a step back from the code for a moment to think about how placeBid() should actually work.
@@ -57,6 +67,9 @@
 #### This seems strange on the surface — after all, when you’re bidding on a pair of ice skates on eBay, you express your bid using the full amount. If you bid $70, and someone else bids $80, you don’t bid “$20” to outbid them. You would probably type “$90” in the input field.
 #### This is where it’s important to recognize the separation of concerns between the contract and the UI. Ideally, the UI is responsible for smoothing over this oddity; the contract’s job is simply to ensure that the business logic is executed securely and correctly, even if that business logic seems a little bit strange to human intuition.
 #### So what does our placeBid() function look like? I don’t want to waste words here dissecting every line of the business logic, since the goal of this article is to address broader architectural patterns and concerns. For those interested in fine-grained detail, I’ve tried to annotate the code with comments where appropriate.
+
+![comments1](Images/comments1.png)
+![comments2](Images/comments2.png)
 
 #### We’re handling several cases here:
 #### A user has sent an amount that isn’t sufficient, in which case we throw.
@@ -82,10 +95,12 @@
 #### 4. Log an event and return.
 
 ## Canceling the auction
+
 #### Luckily, our cancelation function is much simpler than the others. We can make do with the following:
 
 #### We simply set our canceled storage variable to true, log an event, and return.
 #### It’s worth pointing out that we’ve been able to reuse several of our function modifiers here. Right on! In larger contracts, the benefits of these “micro-modifiers” will be even more apparent.
 
 ## Wrapping up
+
 #### Well, there you have it — a decentralized eBay in ~167 lines of Solidity. Unlike other platforms that you might be used to, writing Solidity contracts generally involves very little code, but an enormous amount of attention to detail. Security, gas costs, and readability are all incredibly important considerations, and until we have better analysis tools, much of this work is left to the programmer.
