@@ -1,4 +1,4 @@
-# Solidity Project: building a simple auction contract
+# Solidity: building a simple auction contract
 
 The Auction contract is in the contracts folder.
 
